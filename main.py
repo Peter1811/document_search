@@ -1,13 +1,15 @@
 import datetime
+import random
+
+from sqlalchemy import select
 
 from fastapi import Body, Depends, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from database import session
-from models import Document
-from schemas import DocumentCreate
+from models import Document, Rubric
+from utils import generate_rubric_name
 
 app = FastAPI()
 
@@ -16,32 +18,17 @@ def get_db():
         yield sess
 
 
-@app.get('/')
-def main():
-    return {'Base': 'page'}
-
-@app.post('/create/')
-def create_document(document: DocumentCreate, db: Session = Depends(get_db)):
-    curr_date = datetime.date.today()
-    new_document = Document(
-        text=document.text,
-        created_data=curr_date
-    )
-    try:
-        db.add(new_document)
-        db.commit()
-        db.refresh(new_document)
-        return {'text': document.text}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=f'Error: {e}')
-
-
 @app.post('/search/')
 def text_search(text: str = Body(...), db: Session = Depends(get_db)):
-    return {'text': text}
+    request = select(Document)
+    documents = list(db.execute(request).scalars())
+    results = {}
+    for document in documents:
+        results[document.id] = [document.created_data, document.text, [rubric.text for rubric in document.rubrics]]
+    sorted_results = dict(sorted(results.items(), key=lambda x: x[1][0]))
+    return {'res': list(sorted_results.items())}
 
-@app.delete('/delete/')
+@app.delete('/delete/{id:int}')
 def delete_document(id: int, db: Session = Depends(get_db)):
     try:
         document = db.query(Document).filter(Document.id == id).first()
