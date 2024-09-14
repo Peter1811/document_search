@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-load_dotenv('.env')
+load_dotenv('.env_database', override=True)
 username = os.getenv('USERNAME')
 password = os.getenv('PASSWORD')
 host = os.getenv('HOST')

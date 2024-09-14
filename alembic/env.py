@@ -7,9 +7,12 @@ from sqlalchemy import pool
 from models import Base
 
 from alembic import context
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-load_dotenv('.env')
+path = find_dotenv('.env_database')
+if path:
+    load_dotenv(path, override=True)
+
 username = os.getenv('USERNAME')
 password = os.getenv('PASSWORD')
 host = os.getenv('HOST')

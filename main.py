@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from database import session
 from models import Document
 
-load_dotenv('.env')
+load_dotenv('.env_services', override=True)
 es_host = os.getenv('ELASTICSEARCH_HOST')
 es_port = os.getenv('ELASTICSEARCH_PORT')
 run_host = os.getenv('RUN_HOST')
@@ -41,10 +41,8 @@ def text_search(text: str = Body(...), db: Session = Depends(get_db)):
 
         documents = response['hits']['hits']
         documents_ids = [document['_source']['id'] for document in documents]
-
-        print(documents_ids)
         
-        res = select(Document).where(Document.id.in_(documents_ids)).order_by(Document.created_date).limit(20)
+        res = select(Document).where(Document.id.in_(documents_ids)).order_by(Document.created_date)
         results = db.execute(res).scalars().all()
 
         return list(results)

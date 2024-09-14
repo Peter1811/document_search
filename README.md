@@ -4,22 +4,24 @@
 1) Выполнить установку необходимых библиотек в виртуальное окружение из файла `requirements.txt`
 ```
 python -m venv venv
+venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
-2) Создать файл .env со следующим содержимым
-```
+2) Создать в родительской директории два файла: .env_database и .env_services со следующим содержимым
+```.env_database
 USERNAME=
 PASSWORD=
 HOST=
 PORT=
 DATABASE=
+```
 
-ELASTICSEARCH_HOST=
-ELASTICSEARCH_PORT=
-
-RUN_HOST=
-RUN_PORT=
+```.env_services
+ELASTICSEARCH_HOST=localhost
+ELASTICSEARCH_PORT=9200
+RUN_HOST=localhost
+RUN_PORT=8000
 ```
 Подставить необходимые значения - БД (используется postgresql), elasticsearch, непосредственный запуск сервиса
 
