@@ -9,7 +9,8 @@ pip install -r requirements.txt
 ```
 
 2) Создать в родительской директории два файла: .env_database и .env_services со следующим содержимым
-```.env_database
+## .env_database
+```
 USERNAME=
 PASSWORD=
 HOST=
@@ -17,7 +18,8 @@ PORT=
 DATABASE=
 ```
 
-```.env_services
+##.env_services
+```
 ELASTICSEARCH_HOST=localhost
 ELASTICSEARCH_PORT=9200
 RUN_HOST=localhost
