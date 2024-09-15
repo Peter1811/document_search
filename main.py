@@ -1,12 +1,13 @@
+import asyncio
 import os
 import uvicorn
 
 from dotenv import load_dotenv
-from elasticsearch import Elasticsearch, NotFoundError
+from elasticsearch import NotFoundError, AsyncElasticsearch
 from fastapi import Body, Depends, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.database import get_db
 from models.document import Document
@@ -21,44 +22,47 @@ app = FastAPI()
 
 
 @app.post('/search/')
-def text_search(text: str = Body(...), db: Session = Depends(get_db)):
-
-    client = Elasticsearch(f'http://{es_host}:{es_port}')
+async def text_search(text: str = Body(...), db: AsyncSession = Depends(get_db)):
     try:
-        response = client.search(
-            index='document_index',
-            query={
-                'match': {
-                    'text': text
-                }
-            },
-            size=20
-        )
+        async with AsyncElasticsearch(f'http://{es_host}:{es_port}') as client:
+            response = await client.search(
+                index='document_index',
+                query={
+                    'match': {
+                        'text': text
+                    }
+                },
+                size=20
+            )
 
         documents = response['hits']['hits']
         documents_ids = [document['_source']['id'] for document in documents]
         
-        res = select(Document).where(Document.id.in_(documents_ids)).order_by(Document.created_date)
-        results = db.execute(res).scalars().all()
+        query = select(Document).where(Document.id.in_(documents_ids)).order_by(Document.created_date)
+        query_result = await db.execute(query)
+        result = query_result.scalars().all()
 
-        return list(results)
+        return list(result)
     
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.delete('/delete/{id:int}')
-def delete_document(id: int, db: Session = Depends(get_db)):
+async def delete_document(id: int, db: AsyncSession = Depends(get_db)):
     try:
-        document = db.query(Document).filter(Document.id == id).first()
-        if not document:
-            raise HTTPException(status_code=404, detail=f'Document with id {id} was not found in database')
+        query = select(Document).where(Document.id == id)
+        query_result = await db.execute(query)
+        document = query_result.scalar()
         
-        client = Elasticsearch(f'http://{es_host}:{es_port}')
-        client.delete(index='document_index', id=id)
+        if not document:
+            raise HTTPException(status_code=404)
+        
+        async with AsyncElasticsearch(f'http://{es_host}:{es_port}') as client:
+            await client.delete(index='document_index', id=id)
 
-        db.delete(document)
-        db.commit()
+        await db.delete(document)
+        await db.commit()
 
         return {'deleted document with id': id}
     
@@ -70,7 +74,7 @@ def delete_document(id: int, db: Session = Depends(get_db)):
             return JSONResponse(status_code=404, content={'detail': 'Document was not found'})
 
     except Exception as exc:
-        db.rollback()
+        await db.rollback()
         return JSONResponse(content={'detail': 'Internal error: ' + str(exc)})
 
 
