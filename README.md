@@ -20,10 +20,10 @@ DATABASE=
 
 ### .env_services
 ```
-ELASTICSEARCH_HOST=localhost
-ELASTICSEARCH_PORT=9200
-RUN_HOST=localhost
-RUN_PORT=8000
+ELASTICSEARCH_HOST=
+ELASTICSEARCH_PORT=
+RUN_HOST=
+RUN_PORT=
 ```
 Подставить необходимые значения - БД (используется postgresql), elasticsearch, непосредственный запуск сервиса
 
@@ -38,7 +38,7 @@ es/bin/elasticsearch
 ```
 5) Запустить скрипт для заполнения базы данных `db_filling.py` (предварительно необходимо добавить данные в файл `posts.csv` - содержимое, дату создания и массив рубрик)
 ```
-python db_filling.py
+python scripts/db_filling.py
 ```
 6) Запустить сервис
 ```
