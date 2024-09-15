@@ -8,8 +8,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from database import session
-from models import Document
+from db.database import get_db
+from models.document import Document
 
 load_dotenv('.env_services', override=True)
 es_host = os.getenv('ELASTICSEARCH_HOST')
@@ -18,10 +18,6 @@ run_host = os.getenv('RUN_HOST')
 run_port = os.getenv('RUN_PORT')
 
 app = FastAPI()
-
-def get_db():
-    with session() as db:
-        yield db
 
 
 @app.post('/search/')

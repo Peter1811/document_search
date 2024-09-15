@@ -15,5 +15,8 @@ database = os.getenv('DATABASE')
 DATABASE_URL = f'postgresql://{username}:{password}@{host}:{port}/{database}'
 
 engine = create_engine(url=DATABASE_URL)
-
 session = sessionmaker(bind=engine)
+
+def get_db():
+    with session() as db:
+        yield db

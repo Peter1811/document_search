@@ -4,7 +4,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from models import Base
+from models.document import Base
 
 from alembic import context
 from dotenv import load_dotenv, find_dotenv

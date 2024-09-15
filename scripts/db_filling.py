@@ -6,8 +6,8 @@ import pandas as pd
 from elasticsearch import Elasticsearch
 from dotenv import load_dotenv
 
-from database import session
-from models import Document
+from db.database import session
+from models.document import Document
 
 load_dotenv()
 es_host = os.getenv('ELASTICSEARCH_HOST')
